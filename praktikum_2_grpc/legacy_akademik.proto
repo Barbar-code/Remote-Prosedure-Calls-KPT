@@ -1,0 +1,13 @@
+syntax = "proto3";
+package akademik_legacy;
+
+service LayananNilai {
+  rpc GetMahasiswa (MahasiswaRequest) returns (Mahasiswa);
+}
+
+message MahasiswaRequest { string nim = 1; }
+message Mahasiswa {
+  string nim = 1;
+  string nama = 2;
+  double ipk = 3;
+}

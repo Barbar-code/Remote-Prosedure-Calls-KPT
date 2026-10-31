@@ -1,0 +1,2 @@
+grpcio>=1.85
+grpcio-tools>=1.85
