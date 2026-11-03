@@ -11,20 +11,19 @@ import xmlrpc.client
 from pathlib import Path
 
 RPC_ROOT = Path(__file__).resolve().parents[1]
-WORKSPACE_ROOT = RPC_ROOT.parent
 PRAKTIKUM_2 = RPC_ROOT / "praktikum_2_grpc"
-sys.path.insert(0, str(WORKSPACE_ROOT))
+sys.path.insert(0, str(RPC_ROOT))
 sys.path.insert(0, str(PRAKTIKUM_2))
 
 import grpc
 
-from rpc_practicum.praktikum_1_xmlrpc.server_kalkulator import akar, pangkat, statistik
-from rpc_practicum.praktikum_2_grpc import akademik_pb2 as pb
-from rpc_practicum.praktikum_2_grpc import akademik_pb2_grpc as pb_grpc
-from rpc_practicum.praktikum_2_grpc import legacy_akademik_pb2 as legacy_pb
-from rpc_practicum.praktikum_2_grpc.client_grpc import get_mahasiswa_failover
-from rpc_practicum.praktikum_2_grpc.legacy_client import LegacyLayananNilaiStub
-from rpc_practicum.praktikum_2_grpc.server_grpc import create_server
+from praktikum_1_xmlrpc.server_kalkulator import akar, pangkat, statistik
+from praktikum_2_grpc import akademik_pb2 as pb
+from praktikum_2_grpc import akademik_pb2_grpc as pb_grpc
+from praktikum_2_grpc import legacy_akademik_pb2 as legacy_pb
+from praktikum_2_grpc.client_grpc import get_mahasiswa_failover
+from praktikum_2_grpc.legacy_client import LegacyLayananNilaiStub
+from praktikum_2_grpc.server_grpc import create_server
 
 
 class XMLRPCPracticumTests(unittest.TestCase):
@@ -62,18 +61,21 @@ class GRPCPracticumTests(unittest.TestCase):
         cls.server.stop(grace=0).wait()
 
     def test_l2_unary_streaming_and_client_streaming(self) -> None:
-        mahasiswa = self.stub.GetMahasiswa(pb.MahasiswaRequest(nim="2023001"))
-        self.assertEqual(mahasiswa.nama, "Andi")
+        mahasiswa = self.stub.GetMahasiswa(pb.MahasiswaRequest(nim="247006111191"))
+        self.assertEqual(mahasiswa.nama, "Muhammad Kibar Ramadhan")
         self.assertEqual(mahasiswa.prodi, "Informatika")
 
-        nilai = list(self.stub.StreamNilai(pb.MahasiswaRequest(nim="2023001")))
-        self.assertEqual(len(nilai), 2)
+        nilai = list(self.stub.StreamNilai(pb.MahasiswaRequest(nim="247006111191")))
+        self.assertEqual(
+            [item.matkul for item in nilai],
+            ["Basis Data", "Jaringan Komputer", "Komputasi Parallel Terdistribusi"],
+        )
 
         result = self.stub.KirimBanyakNilai(
             iter(
                 [
-                    pb.NilaiRequest(nim="2023002", matkul="Sistem Operasi", nilai=87),
-                    pb.NilaiRequest(nim="2023002", matkul="Keamanan", nilai=90),
+                    pb.NilaiRequest(nim="247006111191", matkul="Basis Data", nilai=87),
+                    pb.NilaiRequest(nim="247006111191", matkul="Jaringan Komputer", nilai=90),
                 ]
             )
         )
@@ -113,10 +115,13 @@ class GRPCPracticumTests(unittest.TestCase):
 
     def test_l2_async_unary_calls(self) -> None:
         futures = [
-            self.stub.GetMahasiswa.future(pb.MahasiswaRequest(nim="2023001"))
+            self.stub.GetMahasiswa.future(pb.MahasiswaRequest(nim="247006111191"))
             for _ in range(10)
         ]
-        self.assertEqual([future.result(timeout=5).nama for future in futures], ["Andi"] * 10)
+        self.assertEqual(
+            [future.result(timeout=5).nama for future in futures],
+            ["Muhammad Kibar Ramadhan"] * 10,
+        )
 
     def test_l3_failover_from_unavailable_server(self) -> None:
         stopped_server, port, _ = create_server(host="127.0.0.1", port=0, slow_probability=0)
@@ -126,9 +131,9 @@ class GRPCPracticumTests(unittest.TestCase):
         try:
             mahasiswa = get_mahasiswa_failover(
                 [pb_grpc.LayananNilaiStub(failed_channel), self.stub],
-                "2023001",
+                "247006111191",
             )
-            self.assertEqual(mahasiswa.nama, "Andi")
+            self.assertEqual(mahasiswa.nama, "Muhammad Kibar Ramadhan")
         finally:
             failed_channel.close()
 
@@ -137,13 +142,18 @@ class GRPCPracticumTests(unittest.TestCase):
             self.stub.GetMahasiswa(pb.MahasiswaRequest(nim="not-found"))
         self.assertEqual(error.exception.code(), grpc.StatusCode.NOT_FOUND)
 
-        current = pb.Mahasiswa(nim="2023001", nama="Andi", ipk=3.26, prodi="Informatika")
+        current = pb.Mahasiswa(
+            nim="247006111191",
+            nama="Muhammad Kibar Ramadhan",
+            ipk=3.35,
+            prodi="Informatika",
+        )
         old_reader = legacy_pb.Mahasiswa.FromString(current.SerializeToString())
         self.assertEqual(old_reader.nim, current.nim)
         self.assertEqual(old_reader.nama, current.nama)
         old_stub = LegacyLayananNilaiStub(self.channel)
-        old_response = old_stub.GetMahasiswa(legacy_pb.MahasiswaRequest(nim="2023001"))
-        self.assertEqual(old_response.nama, "Andi")
+        old_response = old_stub.GetMahasiswa(legacy_pb.MahasiswaRequest(nim="247006111191"))
+        self.assertEqual(old_response.nama, "Muhammad Kibar Ramadhan")
 
     def test_l3_transfer_deduplication(self) -> None:
         request = pb.TransferRequest(

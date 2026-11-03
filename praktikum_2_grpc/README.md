@@ -10,7 +10,7 @@
 
 ## Menjalankan
 
-Instal dependensi dari folder induk `rpc_practicum`:
+Instal dependensi dari folder induk `Remote-Prosedure-Calls-KPT`:
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -35,4 +35,6 @@ Jalankan eksperimen L2 dari folder ini:
 python experiments.py all
 ```
 
-`KirimBanyakNilai` mengimplementasikan client streaming; `Diskusi` meneruskan pesan antar-client yang terhubung. Client lama tetap dapat membaca field yang dikenalnya karena field baru memiliki nomor tersendiri. Untuk sampel mahasiswa pada laporan, serialisasi Protobuf adalah 24 byte dan XML-RPC 350 byte.
+Data contoh mahasiswa menggunakan NIM `247006111191`, nama Muhammad Kibar Ramadhan, dan program studi Informatika. Mata kuliah yang disediakan: Basis Data, Jaringan Komputer, dan Komputasi Parallel Terdistribusi. Nilai mata kuliah adalah data contoh.
+
+`KirimBanyakNilai` mengimplementasikan client streaming; `Diskusi` meneruskan pesan antar-client yang terhubung. Client lama tetap dapat membaca field yang dikenalnya karena field baru memiliki nomor tersendiri. Untuk data contoh mahasiswa, serialisasi Protobuf adalah 48 byte dan XML-RPC 374 byte. Sepuluh permintaan async pada client memakai NIM yang sama, sehingga nama yang diterima memang berulang sepuluh kali.

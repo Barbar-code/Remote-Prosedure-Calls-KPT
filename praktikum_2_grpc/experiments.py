@@ -12,7 +12,11 @@ from server_grpc import create_server
 
 
 def run_protobuf_size() -> None:
-    mahasiswa = pb.Mahasiswa(nim="2023001", nama="Andi", ipk=3.26)
+    mahasiswa = pb.Mahasiswa(
+        nim="247006111191",
+        nama="Muhammad Kibar Ramadhan",
+        ipk=3.35,
+    )
     protobuf_bytes = mahasiswa.SerializeToString()
     xml = xmlrpc.client.dumps(
         ({"nim": mahasiswa.nim, "nama": mahasiswa.nama, "ipk": mahasiswa.ipk},),

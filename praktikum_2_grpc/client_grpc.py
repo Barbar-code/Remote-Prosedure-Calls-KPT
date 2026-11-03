@@ -77,27 +77,37 @@ def main() -> None:
         channels = [stack.enter_context(grpc.insecure_channel(endpoint)) for endpoint in endpoints]
         stubs = [pb_grpc.LayananNilaiStub(channel) for channel in channels]
         try:
-            mahasiswa = get_mahasiswa_failover(stubs, "2023001")
+            mahasiswa = get_mahasiswa_failover(stubs, "247006111191")
             print(f"{mahasiswa.nama} ({mahasiswa.prodi}) - IPK {mahasiswa.ipk}")
             status = stubs[-1].TambahNilai(
-                pb.NilaiRequest(nim="2023001", matkul="Komputasi Paralel", nilai=88),
+                pb.NilaiRequest(
+                    nim="247006111191",
+                    matkul="Komputasi Parallel Terdistribusi",
+                    nilai=88,
+                ),
                 timeout=2.0,
             )
             print(status.pesan)
-            for nilai in stubs[-1].StreamNilai(pb.MahasiswaRequest(nim="2023001"), timeout=2.0):
+            for nilai in stubs[-1].StreamNilai(
+                pb.MahasiswaRequest(nim="247006111191"),
+                timeout=2.0,
+            ):
                 print(f"  {nilai.matkul}: {nilai.nilai}")
             hasil_batch = stubs[-1].KirimBanyakNilai(
                 iter(
                     [
-                        pb.NilaiRequest(nim="2023002", matkul="Sistem Operasi", nilai=87),
-                        pb.NilaiRequest(nim="2023002", matkul="Keamanan", nilai=90),
+                        pb.NilaiRequest(nim="247006111191", matkul="Basis Data", nilai=87),
+                        pb.NilaiRequest(nim="247006111191", matkul="Jaringan Komputer", nilai=90),
                     ]
                 ),
                 timeout=2.0,
             )
             print(hasil_batch.pesan)
             futures = [
-                stubs[-1].GetMahasiswa.future(pb.MahasiswaRequest(nim="2023001"), timeout=2.0)
+                stubs[-1].GetMahasiswa.future(
+                    pb.MahasiswaRequest(nim="247006111191"),
+                    timeout=2.0,
+                )
                 for _ in range(10)
             ]
             print("Hasil 10 permintaan async:", [future.result().nama for future in futures])

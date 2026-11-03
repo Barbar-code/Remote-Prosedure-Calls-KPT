@@ -36,7 +36,7 @@ Praktikum 3 memakai kontrak dan server gRPC dari folder Praktikum 2, jadi berkas
 
 ## Persiapan
 
-Jalankan dari folder `rpc_practicum`:
+Jalankan dari folder `Remote-Prosedure-Calls-KPT`:
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -86,7 +86,7 @@ Pilih eksperimen tertentu dengan `transfers`, `race`, `failover`, atau `benchmar
 ## Ringkasan hasil dan analisis
 
 - **L1:** 100 panggilan lokal dan RPC dibandingkan; XML request `tambah(5, 3)` berukuran 190 byte dengan payload angka 2 byte (1,05%), response 121 byte dengan payload 1 byte (0,83%). `datetime` dimarshal sebagai `dateTime.iso8601`; integer `2**40` gagal karena batas signed 32-bit XML-RPC. Server yang mati memunculkan `ConnectionRefusedError`/`OSError`.
-- **L2:** client streaming `KirimBanyakNilai`, bidirectional streaming `Diskusi`, field kompatibel `prodi = 4`, dan 10 unary async calls sudah diimplementasikan. Sampel data mahasiswa yang sama: Protobuf 24 byte, XML-RPC 350 byte (14,6 kali lebih besar). Field Protobuf baru aman bagi pembaca lama karena nomor field lama tetap dan field tak dikenal diabaikan.
+- **L2:** client streaming `KirimBanyakNilai`, bidirectional streaming `Diskusi`, field kompatibel `prodi = 4`, dan 10 unary async calls sudah diimplementasikan. Data contoh menggunakan nama Muhammad Kibar Ramadhan, NIM `247006111191`, serta mata kuliah Basis Data, Jaringan Komputer, dan Komputasi Parallel Terdistribusi. Serialisasi contoh mahasiswa: Protobuf 48 byte, XML-RPC 374 byte (7,8 kali lebih besar). Sepuluh permintaan async memakai NIM sama, jadi nama pada hasil memang berulang. Field Protobuf baru aman bagi pembaca lama karena nomor field lama tetap dan field tak dikenal diabaikan.
 - **L3.1–L3.2:** 20 transfer menggunakan ID sama menghasilkan A=800, B=700. Dalam uji respons lambat, UUID baru setiap retry menyebabkan operasi ganda (saldo A=400, B=1100).
 - **L3.3:** uji 50 transfer/10 thread tanpa lock menunjukkan saldo tidak konsisten karena race condition. Hasilnya dipengaruhi penjadwalan thread.
 - **L3.4:** benchmark 200 permintaan/20 client thread, jeda server 0,1 s: 1 worker = 9,59 req/s (20,857 s; 1985,76 ms rata-rata), 4 = 37,42 req/s (5,344 s; 509,63 ms), 10 = 92,18 req/s (2,170 s; 206,48 ms). Hasil bergantung mesin dan beban.

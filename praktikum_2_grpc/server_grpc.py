@@ -22,15 +22,14 @@ class CachedTransfer:
 
 
 DATA: dict[str, dict[str, object]] = {
-    "2023001": {
-        "nama": "Andi",
+    "247006111191": {
+        "nama": "Muhammad Kibar Ramadhan",
         "prodi": "Informatika",
-        "nilai": {"Basis Data": 85.0, "Jaringan": 78.0},
-    },
-    "2023002": {
-        "nama": "Sari",
-        "prodi": "Sistem Informasi",
-        "nilai": {"Basis Data": 92.0},
+        "nilai": {
+            "Basis Data": 85.0,
+            "Jaringan Komputer": 78.0,
+            "Komputasi Parallel Terdistribusi": 88.0,
+        },
     },
 }
 

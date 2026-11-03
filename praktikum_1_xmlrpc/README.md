@@ -8,7 +8,7 @@
 
 ## Menjalankan
 
-Instal dependensi bersama dari folder induk `rpc_practicum`:
+Instal dependensi bersama dari folder induk `Remote-Prosedure-Calls-KPT`:
 
 ```powershell
 python -m pip install -r requirements.txt

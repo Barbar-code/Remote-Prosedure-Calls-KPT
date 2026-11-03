@@ -9,20 +9,20 @@ import uuid
 from pathlib import Path
 
 import grpc
+import matplotlib.pyplot as plt
 
 RPC_ROOT = Path(__file__).resolve().parents[1]
-WORKSPACE_ROOT = RPC_ROOT.parent
 PRAKTIKUM_2 = RPC_ROOT / "praktikum_2_grpc"
-sys.path.insert(0, str(WORKSPACE_ROOT))
+sys.path.insert(0, str(RPC_ROOT))
 sys.path.insert(0, str(PRAKTIKUM_2))
 
-from rpc_practicum.praktikum_2_grpc import akademik_pb2 as pb
-from rpc_practicum.praktikum_2_grpc import akademik_pb2_grpc as pb_grpc
-from rpc_practicum.praktikum_2_grpc.client_grpc import (
+from praktikum_2_grpc import akademik_pb2 as pb
+from praktikum_2_grpc import akademik_pb2_grpc as pb_grpc
+from praktikum_2_grpc.client_grpc import (
     get_mahasiswa_failover,
     transfer_dengan_retry,
 )
-from rpc_practicum.praktikum_2_grpc.server_grpc import create_server
+from praktikum_2_grpc.server_grpc import create_server
 
 
 def run_benchmark() -> list[tuple[int, float, float, float]]:
@@ -43,7 +43,10 @@ def run_benchmark() -> list[tuple[int, float, float, float]]:
 
             def call_once(_: int) -> float:
                 start = time.perf_counter()
-                response = stub.GetMahasiswa(pb.MahasiswaRequest(nim="2023001"), timeout=10)
+                response = stub.GetMahasiswa(
+                    pb.MahasiswaRequest(nim="247006111191"),
+                    timeout=10,
+                )
                 if not response.nama:
                     raise RuntimeError("Respons GetMahasiswa tidak valid")
                 return time.perf_counter() - start
@@ -59,6 +62,31 @@ def run_benchmark() -> list[tuple[int, float, float, float]]:
     print("max_workers | waktu total (s) | throughput (req/s) | latensi rata-rata (ms)")
     for workers, duration, throughput, latency in results:
         print(f"{workers:11} | {duration:15.3f} | {throughput:18.2f} | {latency:23.2f}")
+    figure, (throughput_axis, latency_axis) = plt.subplots(1, 2, figsize=(11, 4.5))
+    worker_counts = [result[0] for result in results]
+    throughputs = [result[2] for result in results]
+    latencies = [result[3] for result in results]
+
+    throughput_axis.bar(worker_counts, throughputs, color="#4472C4")
+    throughput_axis.set_title("Throughput")
+    throughput_axis.set_xlabel("Jumlah worker")
+    throughput_axis.set_ylabel("Permintaan per detik")
+    throughput_axis.set_xticks(worker_counts)
+    throughput_axis.grid(axis="y", alpha=0.3)
+
+    latency_axis.bar(worker_counts, latencies, color="#ED7D31")
+    latency_axis.set_title("Latensi rata-rata")
+    latency_axis.set_xlabel("Jumlah worker")
+    latency_axis.set_ylabel("Milidetik")
+    latency_axis.set_xticks(worker_counts)
+    latency_axis.grid(axis="y", alpha=0.3)
+
+    figure.suptitle("Benchmark gRPC: 200 permintaan, 20 client thread")
+    figure.tight_layout()
+    chart_path = Path(__file__).with_name("hasil_benchmark.png")
+    figure.savefig(chart_path, dpi=150)
+    plt.close(figure)
+    print(f"Grafik benchmark disimpan: {chart_path}")
     return results
 
 
@@ -147,7 +175,7 @@ def run_failover_demo() -> None:
                 pb_grpc.LayananNilaiStub(first_channel),
                 pb_grpc.LayananNilaiStub(second_channel),
             ],
-            "2023001",
+            "247006111191",
         )
         print(f"L3.5 failover berhasil: {mahasiswa.nama} melalui port {second_port}")
     finally:
